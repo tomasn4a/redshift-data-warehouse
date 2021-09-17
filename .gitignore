@@ -1,0 +1,14 @@
+# pycharm
+.idea/
+
+# cache
+__pycache__/
+
+# vscode
+.vscode
+
+# macos
+.DS_Store
+
+# config
+dwh.cfg
