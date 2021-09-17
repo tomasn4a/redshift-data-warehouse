@@ -12,3 +12,4 @@ __pycache__/
 
 # config
 dwh.cfg
+aws_utils/aws.cfg
