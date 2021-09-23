@@ -198,7 +198,7 @@ time_table_insert = ("""
         EXTRACT(MONTH FROM start_time),
         EXTRACT(YEAR FROM start_time),
         EXTRACT(DAYOFWEEK FROM start_time)
-    FROM songplay
+    FROM
 """)
 
 # QUERY LISTS
