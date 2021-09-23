@@ -1,18 +1,27 @@
 import configparser
+import time
+
 import psycopg2
+
 from sql_queries import copy_table_queries, insert_table_queries
 
 
 def load_staging_tables(cur, conn):
     for query in copy_table_queries:
-        cur.execute(query)
+        t0 = time.time()
+        print(f'Loading data from S3 into {query[0]} table')
+        cur.execute(query[1])
         conn.commit()
+        print(f'\tSuccesfully loaded {query[0]} in {time.time() - t0} seconds\n')
 
 
 def insert_tables(cur, conn):
     for query in insert_table_queries:
-        cur.execute(query)
+        t0 = time.time()
+        print(f'Loading data from staging tables into {query[0]} table')
+        cur.execute(query[1])
         conn.commit()
+        print(f'\tSuccesfully loaded {query[0]} in {time.time() - t0} seconds\n')
 
 
 def main():

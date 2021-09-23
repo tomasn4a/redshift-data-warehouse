@@ -1,4 +1,5 @@
 import configparser
+import time
 
 import psycopg2
 
@@ -8,15 +9,21 @@ from sql_queries import create_table_queries, drop_table_queries
 def drop_tables(cur, conn):
     """Drop all tables"""
     for query in drop_table_queries:
-        cur.execute(query)
+        t0 = time.time()
+        print(f'Dropping {query[0]} table')
+        cur.execute(query[1])
         conn.commit()
+        print(f'\tQuery completed successfully in {time.time() - t0} seconds\n')
 
 
 def create_tables(cur, conn):
     """Create all tables"""
     for query in create_table_queries:
-        cur.execute(query)
+        t0 = time.time()
+        print(f'Creating {query[0]} table')
+        cur.execute(query[1])
         conn.commit()
+        print(f'\tQuery completed successfully in {time.time() - t0} seconds\n')
 
 
 def main():
