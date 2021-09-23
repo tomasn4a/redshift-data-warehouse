@@ -43,11 +43,11 @@ staging_events_table_create= ("""
 
 staging_songs_table_create = ("""
     CREATE TABLE IF NOT EXISTS staging_songs (
-        song_id            VARCHAR(18),
+        song_id            VARCHAR,
         title              VARCHAR,
         duration           NUMERIC,
         year               SMALLINT,
-        artist_id          VARCHAR(18),
+        artist_id          VARCHAR,
         artist_name        VARCHAR,
         artist_location    VARCHAR,
         artist_latitude    NUMERIC(8, 5),
@@ -62,8 +62,8 @@ songplay_table_create = ("""
         start_time         TIMESTAMP NOT NULL,
         user_id            SMALLINT NOT NULL,
         level              VARCHAR,
-        song_id            VARCHAR(18) NOT NULL,
-        artist_id          VARCHAR(18) NOT NULL,
+        song_id            VARCHAR NOT NULL,
+        artist_id          VARCHAR NOT NULL,
         session_id         SMALLINT,
         location           VARCHAR,
         user_agent         VARCHAR
@@ -82,9 +82,9 @@ user_table_create = ("""
 
 song_table_create = ("""
     CREATE TABLE IF NOT EXISTS song (
-        song_id            VARCHAR(18) NOT NULL PRIMARY KEY,
+        song_id            VARCHAR NOT NULL PRIMARY KEY,
         title              VARCHAR,
-        artist_id          VARCHAR(18) NOT NULL,
+        artist_id          VARCHAR NOT NULL,
         year               SMALLINT,
         duration           FLOAT
     );
@@ -92,7 +92,7 @@ song_table_create = ("""
 
 artist_table_create = ("""
     CREATE TABLE IF NOT EXISTS artist (
-        artist_id          VARCHAR(18) NOT NULL,
+        artist_id          VARCHAR NOT NULL,
         name               VARCHAR,
         location           VARCHAR,
         latitude           NUMERIC(8, 5),
@@ -117,14 +117,15 @@ time_table_create = ("""
 staging_events_copy = ("""
     COPY staging_events
     FROM 's3://udacity-dend/log_data'
-    IAM_ROLE '{}'
+    IAM_ROLE {}
     JSON 's3://udacity-dend/log_json_path.json';
 """).format(config['IAM_ROLE']['ARN'])
 
 staging_songs_copy = ("""
     COPY staging_songs
     FROM 's3://udacity-dend/song_data'
-    IAM_ROLE '{}'
+    IAM_ROLE {}
+    JSON 'auto'
 """).format(config['IAM_ROLE']['ARN'])
 
 # FINAL TABLES
@@ -155,22 +156,19 @@ songplay_table_insert = ("""
             ON (se.artist=ss.artist_name) 
             AND (se.song=ss.title)
             AND (se.length=ss.duration)
-    WHERE se.page="NextSong"
+    WHERE se.page = 'NextSong';
 """)
 
 user_table_insert = ("""
-    INSERT INTO user
-    (
-        SELECT DISTINCT 
-            userId AS user_id, 
-            firstName AS first_name, 
-            lastName AS last_name, 
-            gender, 
-            level
-        FROM staging_events
-        WHERE page="NextSong"
-            AND user_id IS NOT NULL
-    )
+    INSERT INTO "user"
+    SELECT DISTINCT 
+        userId AS user_id, 
+        firstName AS first_name, 
+        lastName AS last_name, 
+        gender, 
+        level
+    FROM staging_events
+    WHERE user_id IS NOT NULL
 """)
 
 song_table_insert = ("""
@@ -186,7 +184,7 @@ artist_table_insert = ("""
         artist_name,
         artist_location, 
         artist_latitude, 
-        artust_longitude
+        artist_longitude
     FROM staging_songs
 """)
 
@@ -200,36 +198,37 @@ time_table_insert = ("""
         EXTRACT(MONTH FROM start_time),
         EXTRACT(YEAR FROM start_time),
         EXTRACT(DAYOFWEEK FROM start_time)
+    FROM songplay
 """)
 
 # QUERY LISTS
 
 create_table_queries = [
-    staging_events_table_create, 
-    staging_songs_table_create, 
-    songplay_table_create, 
-    user_table_create, 
-    song_table_create, 
-    artist_table_create, 
-    time_table_create
+    ('staging_events', staging_events_table_create), 
+    ('staging_songs', staging_songs_table_create), 
+    ('songplay', songplay_table_create), 
+    ('user', user_table_create), 
+    ('song', song_table_create), 
+    ('artist', artist_table_create), 
+    ('time', time_table_create)
 ]
 drop_table_queries = [
-    staging_events_table_drop, 
-    staging_songs_table_drop, 
-    songplay_table_drop, 
-    user_table_drop, 
-    song_table_drop, 
-    artist_table_drop, 
-    time_table_drop
+    ('staging_events', staging_events_table_drop), 
+    ('staging_songs', staging_songs_table_drop), 
+    ('songplay', songplay_table_drop), 
+    ('user', user_table_drop), 
+    ('song', song_table_drop), 
+    ('artist', artist_table_drop), 
+    ('time', time_table_drop)
 ]
 copy_table_queries = [
-    staging_events_copy, 
-    staging_songs_copy
+    ('staging_events', staging_events_copy), 
+    ('staging_songs', staging_songs_copy)
 ]
 insert_table_queries = [
-    songplay_table_insert, 
-    user_table_insert, 
-    song_table_insert, 
-    artist_table_insert, 
-    time_table_insert
+    ('songplay', songplay_table_insert), 
+    ('user', user_table_insert), 
+    ('song', song_table_insert), 
+    ('artist', artist_table_insert), 
+    ('time', time_table_insert)
 ]
