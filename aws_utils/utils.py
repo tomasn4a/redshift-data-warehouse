@@ -126,7 +126,7 @@ def delete_cluster():
     """Deletes cluster skipping final snapshot"""
 
     # Create redshift client
-    redshift = boto3.client('redshift')
+    redshift = boto3_session.client('redshift')
 
     # Delete cluster
     redshift.delete_cluster(
